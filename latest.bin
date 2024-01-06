@@ -12,31 +12,6 @@ export SENTRY_DSN="${SENTRY_DSN:-'https://public@sentry.example.com/1'}"
 POSTHOG_SECRET=$(head -c 28 /dev/urandom | sha224sum -b | head -c 56)
 export POSTHOG_SECRET
 
-# Talk to the user
-echo "Welcome to the single instance PostHog installer 🦔"
-echo ""
-echo "⚠️  You really need 4gb or more of memory to run this stack ⚠️"
-echo ""
-echo "Power user or aspiring power user?"
-echo "Check out our docs on deploying PostHog! https://posthog.com/docs/self-host/deploy/hobby"
-echo ""
-
-if ! [ -z "$1" ]
-then
-export POSTHOG_APP_TAG=$1
-else
-echo "What version of PostHog would you like to install? (We default to 'latest')"
-echo "You can check out available versions here: https://hub.docker.com/r/posthog/posthog/tags"
-read -r POSTHOG_APP_TAG_READ
-if [ -z "$POSTHOG_APP_TAG_READ" ]
-then
-    echo "Using default and installing $POSTHOG_APP_TAG"
-else
-    export POSTHOG_APP_TAG=$POSTHOG_APP_TAG_READ
-    echo "Using provided tag: $POSTHOG_APP_TAG"
-fi
-fi
-echo ""
 if ! [ -z "$2" ]
 then
 export DOMAIN=$2
@@ -59,15 +34,6 @@ echo "Ok! We'll take it from here 🚀"
 
 echo "Making sure any stack that might exist is stopped"
 sudo -E docker-compose -f docker-compose.yml stop &> /dev/null || true
-
-# send log of this install for continued support!
-curl -o /dev/null -L --header "Content-Type: application/json" -d "{
-    \"api_key\": \"sTMFPsFhdP1Ssg\",
-    \"distinct_id\": \"${DOMAIN}\",
-    \"properties\": {\"domain\": \"${DOMAIN}\"},
-    \"type\": \"capture\",
-    \"event\": \"magic_curl_install_start\"
-}" https://app.posthog.com/batch/ &> /dev/null
 
 # update apt cache
 echo "Grabbing latest apt caches"
@@ -191,13 +157,7 @@ echo "⌛️ PostHog looks up!"
 echo ""
 echo "🎉🎉🎉  Done! 🎉🎉🎉"
 # send log of this install for continued support!
-curl -o /dev/null -L --header "Content-Type: application/json" -d "{
-    \"api_key\": \"sTMFPsFhdP1Ssg\",
-    \"distinct_id\": \"${DOMAIN}\",
-    \"properties\": {\"domain\": \"${DOMAIN}\"},
-    \"type\": \"capture\",
-    \"event\": \"magic_curl_install_complete\"
-}" https://app.posthog.com/batch/ &> /dev/null
+
 echo ""
 echo "To stop the stack run 'docker-compose stop'"
 echo "To start the stack again run 'docker-compose start'"
